@@ -5,9 +5,11 @@
  * @format
  */
 
-import React from 'react';
+import {Keypair, Connection, clusterApiUrl} from '@solana/web3.js';
+import React, {useEffect, useState} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  Button,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -58,6 +60,19 @@ function Section({children, title}: SectionProps): JSX.Element {
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
+  const [keypair, setKeypair] = useState<Keypair>(() => Keypair.generate());
+  const randomKeypair = () => {
+    setKeypair(() => Keypair.generate());
+  };
+
+  const [version, setVersion] = useState<any>('');
+  useEffect(() => {
+    const conn = new Connection(clusterApiUrl('devnet'));
+    conn.getVersion().then(r => {
+      setVersion(r);
+    });
+  }, []);
+
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
@@ -76,6 +91,17 @@ function App(): JSX.Element {
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
           }}>
+          {version ? (
+            <Section title="Version">
+              {JSON.stringify(version, null, 2)}
+            </Section>
+          ) : null}
+          {keypair ? (
+            <Section title="Keypair">
+              {JSON.stringify(keypair?.publicKey?.toBase58(), null, 2)}
+            </Section>
+          ) : null}
+          <Button title="New Keypair" onPress={randomKeypair} />
           <Section title="Step One">
             Edit <Text style={styles.highlight}>App.tsx</Text> to change this
             screen and then come back to see your edits.
